@@ -1,2 +1,2 @@
 # profiling-analysis
-Notebooks to analyse Nvidia NSYS profiling
+Analyse Nvidia NSYS profiling
