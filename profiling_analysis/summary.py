@@ -6,13 +6,12 @@ from profiling_analysis.constants import (
     INFERENCE_NVTX_REPORTS_PATH,
 )
 from profiling_analysis.logger import Logger
+from profiling_analysis.helpers import get_summary_path
 
 log = Logger().get_logger()
 
 
-
 def summarize_cuda_api_operations(df):
-    
     """Create a detailed summary for CUDA API operations."""
     try:
         log.info("Summarizing CUDA API operations...")
@@ -66,16 +65,20 @@ def summarize_cuda_api_operations(df):
 
         # Categorize operations
         operation_summary["Category"] = np.where(
-            operation_summary["Operation"].str.contains("cudaMalloc|cudaFree|cudaMemcpy"),
+            operation_summary["Operation"].str.contains(
+                "cudaMalloc|cudaFree|cudaMemcpy"
+            ),
             "MEMORY_OPER",
             "CUDA_API",
         )
         log.info(f"Added Columns for Categorization of CUDA API operations")
-        
-        operation_summary_sorted = operation_summary.sort_values(by="Time (%)", ascending=False)
+
+        operation_summary_sorted = operation_summary.sort_values(
+            by="Time (%)", ascending=False
+        )
 
         return operation_summary_sorted
-    
+
     except Exception as e:
         log.error(f"Error in summarize_cuda_api_operations: {e}")
         raise e
@@ -106,8 +109,10 @@ def summarize_memory_by_size(df, operation_col="Name"):
 
         # Get percentage of total memory transferred
         total_memory = memory_summary["Total_MB"].sum()
-        memory_summary["Size_Percent"] = (memory_summary["Total_MB"] / total_memory) * 100
-        
+        memory_summary["Size_Percent"] = (
+            memory_summary["Total_MB"] / total_memory
+        ) * 100
+
         log.info(f"Calculated Size Percentages for memory operations")
 
         memory_summary.columns = [
@@ -124,7 +129,7 @@ def summarize_memory_by_size(df, operation_col="Name"):
         log.info(f"Renamed Columns for memory operations")
 
         return memory_summary
-    
+
     except Exception as e:
         log.error(f"Error in summarize_memory_by_size: {e}")
         raise e
@@ -154,7 +159,9 @@ def summarize_memory_by_time(df, operation_col="Name"):
 
         # Calculate the total time to find the percentage of time spent
         total_time = time_summary["Total_Time_ns"].sum()
-        time_summary["Time_Percent"] = (time_summary["Total_Time_ns"] / total_time) * 100
+        time_summary["Time_Percent"] = (
+            time_summary["Total_Time_ns"] / total_time
+        ) * 100
         log.info(f"Calculated Time Percentages for memory operations")
 
         time_summary.rename(
@@ -174,7 +181,7 @@ def summarize_memory_by_time(df, operation_col="Name"):
         log.info(f"Renamed Columns for memory operations")
 
         return time_summary
-    
+
     except Exception as e:
         log.error(f"Error in summarize_memory_by_time: {e}")
         raise e
@@ -182,7 +189,9 @@ def summarize_memory_by_time(df, operation_col="Name"):
 
 def summarize_kernel_launch_and_exec(df, short_kernel_name=False):
     try:
-        log.info(f"Summarizing kernel launch and execution times with Short Kernel Name : {short_kernel_name}...")
+        log.info(
+            f"Summarizing kernel launch and execution times with Short Kernel Name : {short_kernel_name}..."
+        )
         # Columns
         # API Start (ns)	API Dur (ns)	Queue Start (ns)	Queue Dur (ns)	Kernel Start (ns)	Kernel Dur (ns)	Total Dur (ns)	PID	TID	DevId	API Function	GridXYZ	BlockXYZ	Kernel Name
 
@@ -284,45 +293,43 @@ def summarize_kernel_launch_and_exec(df, short_kernel_name=False):
 
         # Sort by Total Average Duration
         kernel_summary = kernel_summary.sort_values(by="TAvg (ns)", ascending=False)
-        
+
         log.info(f"Sorted Kernel Summary by Total Average Duration")
 
         return kernel_summary
-    
+
     except Exception as e:
         log.error(f"Error in summarize_kernel_launch_and_exec: {e}")
         raise e
-    
 
 
-def save_summary_to_csv(df, base_path, task, operation):
+def save_summary_to_csv(df, base_path, task, operation, category=None):
     try:
-        # Save to "generated_reports" folder
-        summary_csv_path = os.path.join(
-            base_path, "reports", f"{task}_{operation}_summary.csv"
+        summary_csv_path = get_summary_path(
+            base_path, f"{task}_{operation}_summary.csv", category
         )
         df.to_csv(summary_csv_path, index=False)
-        
+
         log.info(f"Saved Summary to {summary_csv_path}")
 
     except Exception as e:
         log.error(f"Error in save_summary_to_csv: {e}")
         raise e
-    
-    
+
 
 def generate_cuda_summaries(
     task,
     df_cuda_api_trace_filtered,
     df_cuda_gpu_trace_filtered,
     df_cuda_kernel_exec_trace,
+    category=None,
 ):
     try:
         log.info("Generating CUDA Summaries...")
         # Generate CUDA API summaries
         df_cuda_api_summary = summarize_cuda_api_operations(df_cuda_api_trace_filtered)
         save_summary_to_csv(
-            df_cuda_api_summary, INFERENCE_CUDA_REPORTS_PATH, task, "cuda_api"
+            df_cuda_api_summary, INFERENCE_CUDA_REPORTS_PATH, task, "cuda_api", category
         )
         log.info("Generated CUDA API Summaries")
 
@@ -332,10 +339,18 @@ def generate_cuda_summaries(
         df_cuda_memsize_summary = summarize_memory_by_size(df_cuda_gpu_trace_filtered)
         # Save the summary to a CSV file
         save_summary_to_csv(
-            df_cuda_memtime_summary, INFERENCE_CUDA_REPORTS_PATH, task, "cuda_memtime"
+            df_cuda_memtime_summary,
+            INFERENCE_CUDA_REPORTS_PATH,
+            task,
+            "cuda_memtime",
+            category,
         )
         save_summary_to_csv(
-            df_cuda_memsize_summary, INFERENCE_CUDA_REPORTS_PATH, task, "cuda_memsize"
+            df_cuda_memsize_summary,
+            INFERENCE_CUDA_REPORTS_PATH,
+            task,
+            "cuda_memsize",
+            category,
         )
         log.info("Generated Memory Summaries")
 
@@ -349,12 +364,15 @@ def generate_cuda_summaries(
             INFERENCE_CUDA_REPORTS_PATH,
             task,
             "cuda_kernel_launch_exec",
+            category,
         )
         log.info("Generated Kernel Launch and Execution Summaries")
         # Save to "generated_reports" folder
 
         # Generate a summary with short kernel names
-        log.info("Generating Kernel Launch and Execution Summaries with Short Kernel Names...")
+        log.info(
+            "Generating Kernel Launch and Execution Summaries with Short Kernel Names..."
+        )
         df_cuda_kernel_launch_and_exec_time_short = summarize_kernel_launch_and_exec(
             df_cuda_kernel_exec_trace, short_kernel_name=True
         )
@@ -363,9 +381,12 @@ def generate_cuda_summaries(
             INFERENCE_CUDA_REPORTS_PATH,
             task,
             "cuda_kernel_launch_exec_short",
+            category,
         )
-        log.info("Generated Kernel Launch and Execution Summaries with Short Kernel Names")
-        
+        log.info(
+            "Generated Kernel Launch and Execution Summaries with Short Kernel Names"
+        )
+
     except Exception as e:
         log.error(f"Error in generate_cuda_summaries: {e}")
         raise e
@@ -402,7 +423,7 @@ def summarize_nvtx_gpu_projection(df_nvtx):
         # Additional formatting or calculations can be added here as needed
 
         return projection_summary
-    
+
     except Exception as e:
         log.error(f"Error in summarize_nvtx_gpu_projection: {e}")
         raise e
@@ -433,7 +454,7 @@ def summarize_nvtx_pushpop(df):
         total_time = summary["Total_Time_ns"].sum()
         summary["Time_Percent"] = (summary["Total_Time_ns"] / total_time) * 100
         log.info(f"Calculated Time Percentages for NVTX PushPop operations")
-        
+
         # Handling NaN values for standard deviation in cases of single data point
         summary["StdDev_ns"].fillna(0, inplace=True)
 
@@ -465,14 +486,14 @@ def summarize_nvtx_pushpop(df):
         log.info(f"Formatted Summary for NVTX PushPop operations")
 
         return summary
-    
+
     except Exception as e:
         log.error(f"Error in summarize_nvtx_pushpop: {e}")
         raise e
 
 
 def generate_nvtx_summaries(
-    task, df_nvtx_gpu_proj_trace_filtered, df_nvtx_pushpop_trace_filtered
+    task, df_nvtx_gpu_proj_trace_filtered, df_nvtx_pushpop_trace_filtered, category=None
 ):
     try:
         log.info("Generating NVTX Summaries...")
@@ -481,7 +502,11 @@ def generate_nvtx_summaries(
             df_nvtx_gpu_proj_trace_filtered
         )
         save_summary_to_csv(
-            df_nvtx_gpu_proj_summary, INFERENCE_NVTX_REPORTS_PATH, task, "nvtx_gpu_proj"
+            df_nvtx_gpu_proj_summary,
+            INFERENCE_NVTX_REPORTS_PATH,
+            task,
+            "nvtx_gpu_proj",
+            category,
         )
         log.info("Generated NVTX GPU Projection Summaries")
 
@@ -489,10 +514,14 @@ def generate_nvtx_summaries(
         log.info("Generating NVTX PushPop Summaries...")
         df_nvtx_pushpop_summary = summarize_nvtx_pushpop(df_nvtx_pushpop_trace_filtered)
         save_summary_to_csv(
-            df_nvtx_pushpop_summary, INFERENCE_NVTX_REPORTS_PATH, task, "nvtx_pushpop"
+            df_nvtx_pushpop_summary,
+            INFERENCE_NVTX_REPORTS_PATH,
+            task,
+            "nvtx_pushpop",
+            category,
         )
         log.info("Generated NVTX PushPop Summaries")
-    
+
     except Exception as e:
         log.error(f"Error in generate_nvtx_summaries: {e}")
         raise e

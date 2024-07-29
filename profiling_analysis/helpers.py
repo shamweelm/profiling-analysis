@@ -1,6 +1,8 @@
+import os
 import pandas as pd
 from profiling_analysis.constants import INFERENCE_UNIQUE_KERNEL_NAMES
 from profiling_analysis.logger import Logger
+from datetime import datetime
 
 log = Logger().get_logger()
 
@@ -77,6 +79,106 @@ def get_kernels_from_gpu_trace(df, start, end):
                 (df['Start (ns)'] <= end) &
                 (df['Kernel Ops'].notnull())]
 
+    except Exception as e:
+        log.error(f"Error: {e}")
+        raise e
+
+
+def get_trace_path(base_path, trace_name, category=None):
+    try:
+        trace_base_path = base_path
+        
+        if not os.path.exists(trace_base_path):
+            os.makedirs(trace_base_path, exist_ok=True)
+        
+        if category:
+            if not os.path.exists(os.path.join(trace_base_path, category)):
+                os.makedirs(os.path.join(trace_base_path, category), exist_ok=True)
+            
+            trace_path = os.path.join(trace_base_path, category, trace_name)
+        else:
+            trace_path = os.path.join(trace_base_path, trace_name)
+        
+        return trace_path
+    
+    except Exception as e:
+        log.error(f"Error: {e}")
+        raise e
+
+
+def get_reports_path(base_path, report_name, category=None):
+    try:
+        # reports_base_path = os.path.join(base_path, "results", f"reports_{datetime.now().strftime('%Y_%m_%d')}")
+        reports_base_path = os.path.join(base_path, "results", f"{datetime.now().strftime('%Y_%m_%d')}", "reports")
+        
+        if not os.path.exists(reports_base_path):
+            os.makedirs(reports_base_path, exist_ok=True)
+        
+        # reports_path = os.path.join(reports_base_path, report_name)
+        if category:
+            if not os.path.exists(os.path.join(reports_base_path, category)):
+                os.makedirs(os.path.join(reports_base_path, category), exist_ok=True)
+            
+            reports_path = os.path.join(reports_base_path, category, report_name)
+        else:
+            reports_path = os.path.join(reports_base_path, report_name)
+        
+        return reports_path
+    
+    except Exception as e:
+        log.error(f"Error: {e}")
+        raise e
+    
+
+def get_summary_path(base_path, summary_name, category=None):
+    try:
+        # summary_base_path = os.path.join(base_path, "results", f"summaries_{datetime.now().strftime('%Y_%m_%d')}")
+        summary_base_path = os.path.join(base_path, "results", f"{datetime.now().strftime('%Y_%m_%d')}", "summaries")
+        
+        if not os.path.exists(summary_base_path):
+            os.makedirs(summary_base_path, exist_ok=True)
+        
+        # summary_path = os.path.join(summary_base_path, summary_name)
+        if category:
+            if not os.path.exists(os.path.join(summary_base_path, category)):
+                os.makedirs(os.path.join(summary_base_path, category), exist_ok=True)
+            
+            summary_path = os.path.join(summary_base_path, category, summary_name)
+        else:
+            summary_path = os.path.join(summary_base_path, summary_name)
+        
+        return summary_path
+    
+    except Exception as e:
+        log.error(f"Error: {e}")
+        raise e
+
+
+def get_visualization_path(base_path, filename, operation, category=None):
+    try:
+        # visualization_base_path = os.path.join(base_path, "results", f"visualizations_{datetime.now().strftime('%Y_%m_%d')}")
+        visualization_base_path = os.path.join(base_path, "results", f"{datetime.now().strftime('%Y_%m_%d')}", "visualizations")
+        
+        if not os.path.exists(visualization_base_path):
+            os.makedirs(visualization_base_path, exist_ok=True)
+        
+        # visualization_path = os.path.join(visualization_base_path, filename)
+        if category:
+            if not os.path.exists(os.path.join(visualization_base_path, category)):
+                os.makedirs(os.path.join(visualization_base_path, category), exist_ok=True)
+            
+            if not os.path.exists(os.path.join(visualization_base_path, category, operation)):
+                os.makedirs(os.path.join(visualization_base_path, category, operation), exist_ok=True)
+                
+            visualization_path = os.path.join(visualization_base_path, category, operation, filename)
+        else:
+            if not os.path.exists(os.path.join(visualization_base_path, operation)):
+                os.makedirs(os.path.join(visualization_base_path, operation), exist_ok=True)
+            
+            visualization_path = os.path.join(visualization_base_path, operation, filename)
+        
+        return visualization_path
+    
     except Exception as e:
         log.error(f"Error: {e}")
         raise e

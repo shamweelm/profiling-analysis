@@ -1,10 +1,11 @@
 # Setup a logger to be used in the module
 import logging
 import os
+from datetime import datetime
 
 class Logger:
     def __init__(self):
-        log_file = os.getenv('LOG_FILE', 'logs/app.log')
+        log_file = os.getenv('LOG_FILE', f'logs/app_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log')
         log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
 
         # Convert log level from string to logging constant
