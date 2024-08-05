@@ -1,0 +1,8 @@
+{
+    "token_embedding" : "tok_embeddings: ParallelEmbedding",
+    "transformer_block" : "0: TransformerBlock",
+    "attention_norm" : "attention_norm: RMSNorm",
+    "attention" : "attention: Attention",
+    "feed_forward" : "feed_forward: FeedForward",
+    "ffn_norm" : "ffn_norm: RMSNorm"
+}

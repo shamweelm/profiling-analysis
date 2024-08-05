@@ -13,14 +13,12 @@ from profiling_analysis.helpers import (
     get_kernels_from_gpu_trace,
     get_reports_path,
 )
-from profiling_analysis.constants import (
+from profiling_analysis.configs.constants import (
     INFERENCE_NVTX_REPORTS_PATH,
     INFERENCE_CUDA_REPORTS_PATH
 )
 from profiling_analysis.trace import get_processed_traces, start_tracing_process
-from profiling_analysis.logger import Logger
-
-log = Logger().get_logger()
+from profiling_analysis import logger
 
 
 def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
@@ -35,7 +33,7 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
             lambda row: row["Name"] if not pd.isnull(row["Bytes (MB)"]) else None,
             axis=1,
         )
-        log.info("Separated kernel and memory operations in CUDA GPU trace")
+        logger.info("Separated kernel and memory operations in CUDA GPU trace")
 
         ## Information about CUDA APIs
         df_nvtx_gpu_proj_trace_processed["CUDA APIs"] = [
@@ -60,7 +58,7 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
         df_nvtx_gpu_proj_trace_processed["Relevant Kernels from GPU Trace"] = [
             [] for _ in range(len(df_nvtx_gpu_proj_trace_processed))
         ]
-        log.info("Added columns for GPU Kernels")
+        logger.info("Added columns for GPU Kernels")
 
         ## Information about CUDA GPU Memory Operations
         df_nvtx_gpu_proj_trace_processed["Memory Ops"] = [
@@ -70,7 +68,7 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
         df_nvtx_gpu_proj_trace_processed["Memory Operation Names"] = [
             [] for _ in range(len(df_nvtx_gpu_proj_trace_processed))
         ]
-        log.info("Added columns for GPU Memory Operations")
+        logger.info("Added columns for GPU Memory Operations")
 
         ## Store CorrIDs for Kernels and Memory Operations
         df_nvtx_gpu_proj_trace_filtered["GPU Kernel CorrIDs"] = [
@@ -79,7 +77,7 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
         df_nvtx_gpu_proj_trace_filtered["GPU Memory CorrIDs"] = [
             [] for _ in range(len(df_nvtx_gpu_proj_trace_filtered))
         ]
-        log.info("Added columns for CorrIDs")
+        logger.info("Added columns for CorrIDs")
 
         ## Information about CUDA API to Kernel Mapping
         df_nvtx_gpu_proj_trace_processed["CUDA API to Kernel Mapping"] = [
@@ -88,7 +86,7 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
         df_nvtx_gpu_proj_trace_processed["CUDA API to Memory Mapping"] = [
             {} for _ in range(len(df_nvtx_gpu_proj_trace_processed))
         ]
-        log.info("Added columns for CUDA API to Kernel Mapping")
+        logger.info("Added columns for CUDA API to Kernel Mapping")
 
         # Columns for Summary
         # Summarize operations for the range
@@ -107,12 +105,12 @@ def add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace):
         df_nvtx_gpu_proj_trace_processed["Kernel Summary (Short Names)"] = [
             {} for _ in range(len(df_nvtx_gpu_proj_trace_processed))
         ]
-        log.info("Added columns for Summary")
+        logger.info("Added columns for Summary")
 
         return df_nvtx_gpu_proj_trace_processed
 
     except Exception as e:
-        log.error(f"Error in add_trace_columns: {e}")
+        logger.error(f"Error in add_trace_columns: {e}")
         raise e
 
 
@@ -137,7 +135,7 @@ def get_relevant_cuda_apis(df_cuda_api_trace, range_start, range_end):
         return relevant_cuda_apis, unique_cuda_api_names
 
     except Exception as e:
-        log.error(f"Error in get_relevant_cuda_apis: {e}")
+        logger.error(f"Error in get_relevant_cuda_apis: {e}")
         raise e
 
 
@@ -160,7 +158,7 @@ def get_relevant_kernels(df_cuda_kernel_exec_trace, range_start, range_end):
         return relevant_kernels, unique_kernel_names
 
     except Exception as e:
-        log.error(f"Error in get_relevant_kernels: {e}")
+        logger.error(f"Error in get_relevant_kernels: {e}")
         raise e
 
 
@@ -169,7 +167,7 @@ def get_gpu_execution_time(relevant_kernels):
         return relevant_kernels["Kernel Dur (ns)"].sum()
 
     except Exception as e:
-        log.error(f"Error in get_gpu_execution_time: {e}")
+        logger.error(f"Error in get_gpu_execution_time: {e}")
         raise e
 
 
@@ -188,7 +186,7 @@ def get_relevant_kernels_from_gpu_trace(df_cuda_gpu_trace, range_start, range_en
         return relevant_kernels_from_gpu_trace
 
     except Exception as e:
-        log.error(f"Error in get_relevant_kernels_from_gpu_trace: {e}")
+        logger.error(f"Error in get_relevant_kernels_from_gpu_trace: {e}")
         raise e
 
 
@@ -213,7 +211,7 @@ def get_relevant_memory_ops(df_cuda_gpu_trace, range_start, range_end):
         return relevant_memory_ops, unique_memory_op_names
 
     except Exception as e:
-        log.error(f"Error in get_relevant_memory_ops: {e}")
+        logger.error(f"Error in get_relevant_memory_ops: {e}")
         raise e
 
 
@@ -260,7 +258,7 @@ def get_api_mapping(
         return api_kernel_mapping, api_memory_mapping
 
     except Exception as e:
-        log.error(f"Error in get_api_mapping: {e}")
+        logger.error(f"Error in get_api_mapping: {e}")
         raise e
 
 
@@ -285,13 +283,13 @@ def get_corr_ids(relevant_kernels_from_gpu_trace, relevant_memory_ops):
         return gpu_kernel_corr_ids, gpu_memory_corr_ids
 
     except Exception as e:
-        log.error(f"Error in get_corr_ids: {e}")
+        logger.error(f"Error in get_corr_ids: {e}")
         raise e
 
 
 # def gpu_and_cpu_times(df_nvtx_gpu_proj_trace_filtered, df_cuda_api_trace, df_cuda_gpu_trace, df_cuda_kernel_exec_trace):
 #     try:
-#         log.info("Processing GPU and CPU Times")
+#         logger.info("Processing GPU and CPU Times")
 
 #         df_nvtx_gpu_proj_trace_processed = add_trace_columns(df_nvtx_gpu_proj_trace_filtered, df_cuda_gpu_trace)
 
@@ -302,20 +300,20 @@ def get_corr_ids(relevant_kernels_from_gpu_trace, relevant_memory_ops):
 
 #             relevant_cuda_apis, unique_cuda_api_names = get_relevant_cuda_apis(df_cuda_api_trace, range_start, range_end)
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'CUDA APIs'] = relevant_cuda_apis.to_dict('records')
-#             log.info(f"Index: {idx}, Relevant CUDA APIs added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Relevant CUDA APIs added to df_nvtx_gpu_proj_trace_processed")
 
 #             # Store as strings with comma separated values
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'CUDA API Names'] = ','.join(unique_cuda_api_names)
-#             log.info(f"Index: {idx}, Unique CUDA API Names added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Unique CUDA API Names added to df_nvtx_gpu_proj_trace_processed")
 
 #             # Filter relevant CUDA kernels
 #             relevant_kernels, unique_kernel_names = get_relevant_kernels(df_cuda_kernel_exec_trace, range_start, range_end)
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'Kernels'] = relevant_kernels.to_dict('records')
-#             log.info(f"Index: {idx}, Relevant Kernels added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Relevant Kernels added to df_nvtx_gpu_proj_trace_processed")
 
 #             # Store as strings with comma separated values
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'Kernel Names'] = ','.join(unique_kernel_names)
-#             log.info(f"Index: {idx}, Unique Kernel Names added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Unique Kernel Names added to df_nvtx_gpu_proj_trace_processed")
 
 
 #             # Sum of kernel durations
@@ -323,25 +321,25 @@ def get_corr_ids(relevant_kernels_from_gpu_trace, relevant_memory_ops):
 
 #             # Get kernels from df_cuda_gpu_trace
 #             relevant_kernels_from_gpu_trace = get_relevant_kernels_from_gpu_trace(df_cuda_gpu_trace, range_start, range_end)
-#             log.info(f"Index: {idx}, Relevant Kernels from GPU Trace added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Relevant Kernels from GPU Trace added to df_nvtx_gpu_proj_trace_processed")
 
 #             # Check if the kernels match
 #             kernels_match = set(relevant_kernels['Kernel Start (ns)']) == set(relevant_kernels_from_gpu_trace['Start (ns)'])
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'Kernels Match'] = 'Yes' if kernels_match else 'No'
-#             log.info(f"Index: {idx}, Kernels Match: {kernels_match}")
+#             logger.info(f"Index: {idx}, Kernels Match: {kernels_match}")
 
 #             # Store relevant kernels from GPU trace only if they don't match
 #             if not kernels_match:
-#                 log.info(f"Index: {idx}, Kernels do not match, saving relevant kernels from GPU trace")
+#                 logger.info(f"Index: {idx}, Kernels do not match, saving relevant kernels from GPU trace")
 #                 df_nvtx_gpu_proj_trace_processed.at[idx, 'Relevant Kernels from GPU Trace'] = relevant_kernels_from_gpu_trace.to_dict('records')
 
 #             # Filter relevant memory operations
 #             relevant_memory_ops, unique_memory_op_names = get_relevant_memory_ops(df_cuda_gpu_trace, range_start, range_end)
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'Memory Ops'] = relevant_memory_ops.to_dict('records')
-#             log.info(f"Index: {idx}, Relevant Memory Operations added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Relevant Memory Operations added to df_nvtx_gpu_proj_trace_processed")
 #             # Store as strings with comma separated values
 #             df_nvtx_gpu_proj_trace_processed.at[idx, 'Memory Operation Names'] = ','.join(unique_memory_op_names)
-#             log.info(f"Index: {idx}, Unique Memory Operation Names added to df_nvtx_gpu_proj_trace_processed")
+#             logger.info(f"Index: {idx}, Unique Memory Operation Names added to df_nvtx_gpu_proj_trace_processed")
 
 #             # Get API Mapping
 #             api_kernel_mapping, api_memory_mapping = get_api_mapping(df_cuda_gpu_trace, relevant_cuda_apis, relevant_kernels_from_gpu_trace, relevant_memory_ops)
@@ -372,7 +370,7 @@ def get_corr_ids(relevant_kernels_from_gpu_trace, relevant_memory_ops):
 #         return df_nvtx_gpu_proj_trace_processed
 
 #     except Exception as e:
-#         log.error(f"Error in gpu_and_cpu_times: {e}")
+#         logger.error(f"Error in gpu_and_cpu_times: {e}")
 #         raise e
 
 
@@ -465,7 +463,7 @@ def process_chunk(
         return chunk_processed
 
     except Exception as e:
-        log.error(f"Error in process_chunk: {e}")
+        logger.error(f"Error in process_chunk: {e}")
         raise e
 
 
@@ -481,7 +479,7 @@ def gpu_and_cpu_times(
     category=None,
 ):
     try:
-        log.info("Processing GPU and CPU Times")
+        logger.info("Processing GPU and CPU Times")
 
         num_chunks = mp.cpu_count()
         chunk_size = len(df_nvtx_gpu_proj_trace_filtered) // num_chunks
@@ -489,6 +487,7 @@ def gpu_and_cpu_times(
             df_nvtx_gpu_proj_trace_filtered.iloc[i : i + chunk_size]
             for i in range(0, len(df_nvtx_gpu_proj_trace_filtered), chunk_size)
         ]
+        logger.info(f"Split data into {num_chunks} chunks")
 
         with mp.Pool(num_chunks) as pool:
             results = []
@@ -509,6 +508,8 @@ def gpu_and_cpu_times(
                 total=len(chunks),
             ):
                 results.append(result)
+        
+        logger.info("Processed all chunks")
 
         df_nvtx_gpu_proj_trace_processed = pd.concat(results)
 
@@ -516,11 +517,12 @@ def gpu_and_cpu_times(
             INFERENCE_NVTX_REPORTS_PATH, report_name="nvtx_gpu_proj_trace_processed.csv", category=category
         )
         df_nvtx_gpu_proj_trace_processed.to_csv(csv_path, index=False)
+        logger.info(f"Saved processed data to: {csv_path}")
 
         return df_nvtx_gpu_proj_trace_processed
 
     except Exception as e:
-        log.error(f"Error in gpu_and_cpu_times: {e}")
+        logger.error(f"Error in gpu_and_cpu_times: {e}")
         raise e
     
 
@@ -547,8 +549,9 @@ def start_gpu_cpu_times_process(task="inference", category=None, results={}, sam
                 df_cuda_api_trace_filtered,
                 df_cuda_gpu_trace_filtered,
                 df_cuda_kernel_exec_trace,
+                category=category,
             )
 
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e

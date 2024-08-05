@@ -4,9 +4,7 @@ import json
 import traceback, sys
 import matplotlib.pyplot as plt
 import seaborn as sns
-from profiling_analysis.logger import Logger
-
-log = Logger().get_logger()
+from profiling_analysis import logger
 
 
 def prepare_data(df, threshold, time_percentage_col, operation_col):
@@ -19,7 +17,7 @@ def prepare_data(df, threshold, time_percentage_col, operation_col):
         return df
     
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e
 
 
@@ -33,7 +31,7 @@ def get_others_items(df, threshold, time_percentage_col, operation_col):
             return []
         
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e
     
 
@@ -81,7 +79,7 @@ def plot_pie_chart(df, save_path, title, threshold, percentage_col, stat_col, st
         return others_items
     
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e
     
 
@@ -131,7 +129,7 @@ def plot_bar_chart(df, save_path, title, threshold, percentage_col, stat_col, st
         return other_items
     
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e
     
 
@@ -178,5 +176,5 @@ def plot_time(df, save_path, title, limit, time_col, name_col, label_col, x_labe
         plt.savefig(save_path)
         
     except Exception as e:
-        log.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise e

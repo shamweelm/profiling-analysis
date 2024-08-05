@@ -25,13 +25,15 @@ class Logger:
         console_handler.setLevel(numeric_level)
 
         # Create a formatter and set it for both handlers
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # Add function name to the log message
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s')
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 
         # Add the handlers to the logger
         self.logger.addHandler(file_handler)
-        # self.logger.addHandler(console_handler)
+        self.logger.addHandler(console_handler)
 
     def get_logger(self):
         return self.logger
