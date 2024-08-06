@@ -482,7 +482,9 @@ def gpu_and_cpu_times(
         logger.info("Processing GPU and CPU Times")
 
         num_chunks = mp.cpu_count()
-        chunk_size = len(df_nvtx_gpu_proj_trace_filtered) // num_chunks
+        # chunk_size = len(df_nvtx_gpu_proj_trace_filtered) // num_chunks
+        chunk_size = max(len(df_nvtx_gpu_proj_trace_filtered) // num_chunks, 1)
+        
         chunks = [
             df_nvtx_gpu_proj_trace_filtered.iloc[i : i + chunk_size]
             for i in range(0, len(df_nvtx_gpu_proj_trace_filtered), chunk_size)

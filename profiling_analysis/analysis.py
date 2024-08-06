@@ -18,6 +18,10 @@ def run_inference_analysis(
         logger.info("Running Inference Analysis")
         task = "inference"
         category = CATEGORY
+        
+        if category == "all" and sample_size is not None:
+            sample_size = sample_size * 5
+        
         results = None
         if trace_process:
             logger.info("Processing Trace")
