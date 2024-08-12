@@ -1,0 +1,97 @@
+{
+    "inference_types": [
+      {
+        "inference_type": "inference_llama_repo",
+        "categories": {
+          "model_loading": {
+            "time_parameters": {
+              "start_time": 61.7,
+              "end_time": 166.8
+            }
+          },
+          "inference_after_model_loading": {
+            "time_parameters": {
+              "start_time": 166.7,
+              "end_time": "inf"
+            }
+          },
+          "inference_all": {
+            "time_parameters": {
+              "start_time": 0,
+              "end_time": "inf"
+            }
+          }
+        }
+      },
+      {
+        "inference_type": "inference_llama_repo_torch_ao_int8_wo",
+        "categories": {
+          "model_loading": {
+            "time_parameters": {
+              "start_time": 21.3,
+              "end_time": 165.6
+            }
+          },
+          "inference_after_model_loading": {
+            "time_parameters": {
+              "start_time": 165.5,
+              "end_time": "inf"
+            }
+          },
+          "inference_all": {
+            "time_parameters": {
+              "start_time": 0,
+              "end_time": "inf"
+            }
+          }
+        }
+      },
+      {
+        "inference_type": "inference_llama_repo_custom_int8_ll_wt_no_output",
+        "categories": {
+          "model_loading": {
+            "time_parameters": {
+              "start_time": 4.74,
+              "end_time": 151.4
+            }
+          },
+          "inference_after_model_loading": {
+            "time_parameters": {
+              "start_time": 151.3,
+              "end_time": "inf"
+            }
+          },
+          "inference_all": {
+            "time_parameters": {
+              "start_time": 0,
+              "end_time": "inf"
+            }
+          }
+        }
+      },
+      {
+        "inference_type": "inference_llama_repo_custom_int8_ll_wt",
+        "categories": {
+          "model_loading": {
+            "time_parameters": {
+              "start_time": 5.42818,
+              "end_time": 144.863
+            }
+          },
+          "inference_after_model_loading": {
+            "time_parameters": {
+              "start_time": 144.862,
+              "end_time": "inf"
+            }
+          },
+          "inference_all": {
+            "time_parameters": {
+              "start_time": 0,
+              "end_time": "inf"
+            }
+          }
+        }
+      }
+    ]
+  }
+  

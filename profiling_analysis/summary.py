@@ -94,13 +94,13 @@ def summarize_memory_by_size(df, operation_col="Name"):
         memory_summary = (
             df.groupby(operation_col)
             .agg(
-                Total_MB=("Bytes (MB)", lambda x: round(x.sum(), 6)),
+                Total_MB=("Bytes (MB)", lambda x: round(x.sum(), 12)),
                 Count=("Bytes (MB)", "size"),
-                Avg_MB=("Bytes (MB)", lambda x: round(x.mean(), 6)),
-                Med_MB=("Bytes (MB)", lambda x: round(x.median(), 6)),
-                Min_MB=("Bytes (MB)", lambda x: round(x.min(), 6)),
-                Max_MB=("Bytes (MB)", lambda x: round(x.max(), 6)),
-                StdDev_MB=("Bytes (MB)", lambda x: round(x.std(), 6)),
+                Avg_MB=("Bytes (MB)", lambda x: round(x.mean(), 12)),
+                Med_MB=("Bytes (MB)", lambda x: round(x.median(), 12)),
+                Min_MB=("Bytes (MB)", lambda x: round(x.min(), 12)),
+                Max_MB=("Bytes (MB)", lambda x: round(x.max(), 12)),
+                StdDev_MB=("Bytes (MB)", lambda x: round(x.std(), 12)),
             )
             .reset_index()
         )
@@ -190,6 +190,11 @@ def summarize_kernel_launch_and_exec(df, short_kernel_name=False):
         logger.info(
             f"Summarizing kernel launch and execution times with Short Kernel Name : {short_kernel_name}..."
         )
+        
+        if df.empty or df is None:
+            logger.warning("Empty DataFrame for Kernel Execution Trace")
+            return df
+        
         # Columns
         # API Start (ns)	API Dur (ns)	Queue Start (ns)	Queue Dur (ns)	Kernel Start (ns)	Kernel Dur (ns)	Total Dur (ns)	PID	TID	DevId	API Function	GridXYZ	BlockXYZ	Kernel Name
 
@@ -353,37 +358,41 @@ def generate_cuda_summaries(
         logger.info("Generated Memory Summaries")
 
         # Generate kernel launch and execution summaries
-        logger.info("Generating Kernel Launch and Execution Summaries...")
-        df_cuda_kernel_launch_and_exec_time = summarize_kernel_launch_and_exec(
-            df_cuda_kernel_exec_trace
-        )
-        save_summary_to_csv(
-            df_cuda_kernel_launch_and_exec_time,
-            INFERENCE_CUDA_REPORTS_PATH,
-            task,
-            "cuda_kernel_launch_exec",
-            category,
-        )
-        logger.info("Generated Kernel Launch and Execution Summaries")
-        # Save to "generated_reports" folder
+        if (df_cuda_kernel_exec_trace is None) or (df_cuda_kernel_exec_trace.empty):
+            logger.warning("No Kernel Execution Trace found")
+            return
+        else:
+            logger.info("Generating Kernel Launch and Execution Summaries...")
+            df_cuda_kernel_launch_and_exec_time = summarize_kernel_launch_and_exec(
+                df_cuda_kernel_exec_trace
+            )
+            save_summary_to_csv(
+                df_cuda_kernel_launch_and_exec_time,
+                INFERENCE_CUDA_REPORTS_PATH,
+                task,
+                "cuda_kernel_launch_exec",
+                category,
+            )
+            logger.info("Generated Kernel Launch and Execution Summaries")
+            # Save to "generated_reports" folder
 
-        # Generate a summary with short kernel names
-        logger.info(
-            "Generating Kernel Launch and Execution Summaries with Short Kernel Names..."
-        )
-        df_cuda_kernel_launch_and_exec_time_short = summarize_kernel_launch_and_exec(
-            df_cuda_kernel_exec_trace, short_kernel_name=True
-        )
-        save_summary_to_csv(
-            df_cuda_kernel_launch_and_exec_time_short,
-            INFERENCE_CUDA_REPORTS_PATH,
-            task,
-            "cuda_kernel_launch_exec_short",
-            category,
-        )
-        logger.info(
-            "Generated Kernel Launch and Execution Summaries with Short Kernel Names"
-        )
+            # Generate a summary with short kernel names
+            logger.info(
+                "Generating Kernel Launch and Execution Summaries with Short Kernel Names..."
+            )
+            df_cuda_kernel_launch_and_exec_time_short = summarize_kernel_launch_and_exec(
+                df_cuda_kernel_exec_trace, short_kernel_name=True
+            )
+            save_summary_to_csv(
+                df_cuda_kernel_launch_and_exec_time_short,
+                INFERENCE_CUDA_REPORTS_PATH,
+                task,
+                "cuda_kernel_launch_exec_short",
+                category,
+            )
+            logger.info(
+                "Generated Kernel Launch and Execution Summaries with Short Kernel Names"
+            )
 
     except Exception as e:
         logger.error(f"Error in generate_cuda_summaries: {e}")

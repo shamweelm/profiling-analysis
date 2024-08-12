@@ -103,82 +103,6 @@ def visualize_cuda_api_summaries(task, base_path, category=None):
         raise e
 
 
-def get_malloc_and_free_stats(task, base_path, category=None):
-    try:
-        logger.info(f"Getting CUDA Malloc and Free Stats for Task: {task}, Category: {category}, Base Path: {base_path}")
-        cuda_api_trace_filtered_csv_path = get_summary_path(
-            base_path, f"{task}_cuda_api_trace_filtered.csv", category
-        )
-        df_cuda_api_trace_filtered = pd.read_csv(cuda_api_trace_filtered_csv_path)
-        logger.info(f"Loaded CUDA API Trace Filtered: {df_cuda_api_trace_filtered.shape}")
-
-        # Get all instances of "cudaMalloc" operations
-        df_cuda_malloc = df_cuda_api_trace_filtered[
-            df_cuda_api_trace_filtered["Name"] == "cudaMalloc"
-        ]
-
-        # Total duration of cudaMalloc calls
-        total_duration = df_cuda_malloc["Duration (ns)"].sum()
-
-        # Average duration of cudaMalloc calls
-        average_duration = df_cuda_malloc["Duration (ns)"].mean()
-
-        # Total number of cudaMalloc calls
-        total_calls = df_cuda_malloc.shape[0]
-
-        # print(f"Total Duration of cudaMalloc calls: {total_duration} ns")
-        # print(f"Average Duration of cudaMalloc calls: {average_duration} ns")
-        # print(f"Total Number of cudaMalloc calls: {total_calls}")
-        # Convert to DataFrame and save to a file
-        cuda_malloc_stats = {
-            "Total Duration": total_duration,
-            "Average Duration": average_duration,
-            "Total Calls": total_calls,
-        }
-        df_cuda_malloc_stats = pd.DataFrame([cuda_malloc_stats])
-        cuda_malloc_stats_file_path = get_summary_path(
-            base_path, f"{task}_cuda_malloc_stats.csv", category
-        )
-        df_cuda_malloc_stats.to_csv(cuda_malloc_stats_file_path, index=False)
-        logger.info(f"Saved CUDA Malloc Stats to: {cuda_malloc_stats_file_path}")
-        
-        # Get all instances of "cudaFree" operations
-        df_cuda_free = df_cuda_api_trace_filtered[
-            df_cuda_api_trace_filtered["Name"] == "cudaFree"
-        ]
-
-        # Total duration of cudaFree calls
-        total_duration = df_cuda_free["Duration (ns)"].sum()
-
-        # Average duration of cudaFree calls
-        average_duration = df_cuda_free["Duration (ns)"].mean()
-
-        # Total number of cudaFree calls
-        total_calls = df_cuda_free.shape[0]
-
-        # print(f"Total Duration of cudaFree calls: {total_duration} ns")
-        # print(f"Average Duration of cudaFree calls: {average_duration} ns")
-        # print(f"Total Number of cudaFree calls: {total_calls}")
-
-        # Convert to DataFrame and save to a file
-        cuda_free_stats = {
-            "Total Duration": total_duration,
-            "Average Duration": average_duration,
-            "Total Calls": total_calls,
-        }
-
-        df_cuda_free_stats = pd.DataFrame([cuda_free_stats])
-        cuda_free_stats_file_path = get_summary_path(
-            base_path, f"{task}_cuda_free_stats.csv", category
-        )
-        df_cuda_free_stats.to_csv(cuda_free_stats_file_path, index=False)
-        logger.info(f"Saved CUDA Free Stats to: {cuda_free_stats_file_path}")
-
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        raise e
-
-
 def visualize_cuda_memtime_summary(task, base_path, category=None):
     try:
         logger.info(f"Visualizing CUDA Memory Time Summary for Task: {task}, Category: {category}, Base Path: {base_path}")
@@ -236,7 +160,7 @@ def visualize_cuda_memsize_summary(task, base_path, category=None):
             df=df_cuda_memsize_summary,
             save_path=save_path_pie_chart,
             title="CUDA Memory Size Summary",
-            threshold=0.0000,
+            threshold=0.0000000,
             percentage_col="Size_Percent",
             stat_col="Avg (MB)",
             stat_base="MB",
@@ -267,6 +191,11 @@ def visualize_kernel_summaries(task, base_path, category=None):
         cuda_kernel_launch_exec_short_summary_csv_path = get_summary_path(
             base_path, f"{task}_cuda_kernel_launch_exec_short_summary.csv", category
         )
+        
+        if not os.path.exists(cuda_kernel_launch_exec_short_summary_csv_path):
+            logger.error(f"Kernel Summary File does not exist: {cuda_kernel_launch_exec_short_summary_csv_path}")
+            return
+        
         df_cuda_kernel_launch_exec_short_summary = pd.read_csv(
             cuda_kernel_launch_exec_short_summary_csv_path
         )

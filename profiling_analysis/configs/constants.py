@@ -2,15 +2,16 @@
 import numpy as np
 
 BASE_PATH = "/Users/shamweelmohammed/Desktop/Masters/Dissertation/Trace/"
-CATEGORY = "inference_after_model_loading" # inference_after_model_loading or inference_before_model_loading or all
-START_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING = 13.8e9 # 13.8 seconds for torchtune # 15.8 for llama_repo
-END_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING = np.inf
-START_TIME_FOPR_INFERENCE_BEFORE_MODEL_LOADING = 0
-END_TIME_FOR_INFERENCE_BEFORE_MODEL_LOADING = 13.8e9
-START_TIME_FOR_INFERENCE_ALL = 0
-END_TIME_FOR_INFERENCE_ALL = np.inf
+CATEGORY = "inference_after_model_loading" # inference_after_model_loading or model_loading or all
 
-INFERENCE_TYPE = "inference_torchtune" # inference_torchtune or inference_llama_repo
+# inference_llama_repo or 
+# inference_llama_repo_torch_ao_int8_wo or 
+# inference_llama_repo_custom_int8_ll_wt_no_output or
+# inference_llama_repo_custom_int8_ll_wt or 
+# inference_torchtune or 
+# inference_torchtune_quantize_int4
+INFERENCE_TYPE = "inference_llama_repo"
+CATEGORY_MAPPING = f"profiling_analysis/configs/category_mapping.json"
 INFERENCE_SQLITE_PATH = BASE_PATH + f"Inference_Server/{INFERENCE_TYPE}/nsys_profile.sqlite"
 INFERENCE_CUDA_REPORTS_PATH = BASE_PATH + f"Inference_Server/{INFERENCE_TYPE}/cuda_stats/"
 INFERENCE_NVTX_REPORTS_PATH = BASE_PATH +  f"Inference_Server/{INFERENCE_TYPE}/nvtx_stats/"

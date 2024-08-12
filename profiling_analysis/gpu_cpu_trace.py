@@ -141,6 +141,9 @@ def get_relevant_cuda_apis(df_cuda_api_trace, range_start, range_end):
 
 def get_relevant_kernels(df_cuda_kernel_exec_trace, range_start, range_end):
     try:
+        if (df_cuda_kernel_exec_trace is None) or (df_cuda_kernel_exec_trace.empty):
+            return pd.DataFrame(), np.array([])
+        
         # Filter relevant CUDA kernels
         relevant_kernels = df_cuda_kernel_exec_trace[
             (df_cuda_kernel_exec_trace["Kernel Start (ns)"] >= range_start)
@@ -164,6 +167,8 @@ def get_relevant_kernels(df_cuda_kernel_exec_trace, range_start, range_end):
 
 def get_gpu_execution_time(relevant_kernels):
     try:
+        if relevant_kernels.empty or relevant_kernels is None:
+            return 0
         return relevant_kernels["Kernel Dur (ns)"].sum()
 
     except Exception as e:
@@ -407,9 +412,12 @@ def process_chunk(
             relevant_kernels_from_gpu_trace = get_relevant_kernels_from_gpu_trace(
                 df_cuda_gpu_trace, range_start, range_end
             )
-            kernels_match = set(relevant_kernels["Kernel Start (ns)"]) == set(
-                relevant_kernels_from_gpu_trace["Start (ns)"]
-            )
+            if relevant_kernels_from_gpu_trace.empty:
+                kernels_match = False
+            else:
+                kernels_match = set(relevant_kernels["Kernel Start (ns)"]) == set(
+                    relevant_kernels_from_gpu_trace["Start (ns)"]
+                )
             chunk_processed.at[idx, "Kernels Match"] = "Yes" if kernels_match else "No"
 
             if not kernels_match:
@@ -513,6 +521,7 @@ def gpu_and_cpu_times(
         
         logger.info("Processed all chunks")
 
+        print("results: ", results)
         df_nvtx_gpu_proj_trace_processed = pd.concat(results)
 
         csv_path = get_reports_path(
@@ -544,7 +553,8 @@ def start_gpu_cpu_times_process(task="inference", category=None, results={}, sam
             df_nvtx_gpu_proj_trace_filtered = df_nvtx_gpu_proj_trace_filtered.head(sample_size)
             df_cuda_api_trace_filtered = df_cuda_api_trace_filtered.head(sample_size)
             df_cuda_gpu_trace_filtered = df_cuda_gpu_trace_filtered.head(sample_size)
-            df_cuda_kernel_exec_trace = df_cuda_kernel_exec_trace.head(sample_size)
+            if (df_cuda_kernel_exec_trace is not None) or (not df_cuda_kernel_exec_trace.empty):
+                df_cuda_kernel_exec_trace = df_cuda_kernel_exec_trace.head(sample_size)
         
         df_nvtx_gpu_proj_trace_processed = gpu_and_cpu_times(
                 df_nvtx_gpu_proj_trace_filtered,

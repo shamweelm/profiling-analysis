@@ -6,8 +6,8 @@
     "transformer_decoder" : "TransformerDecoder",
     "token_embedding" : "tok_embeddings: ParallelEmbedding",
     "transformer_block" : "0: TransformerDecoderLayer",
-    "attention_norm" : "sa_norm: RMSNorm",
     "attention" : "attn: CausalSelfAttention",
+    "attention_norm" : "sa_norm: RMSNorm",
     "feed_forward" : "mlp: FeedForward",
     "ffn_norm" : "mlp_norm: RMSNorm"
 }

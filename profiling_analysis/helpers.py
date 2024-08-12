@@ -2,7 +2,7 @@ import os
 import re
 import json
 import pandas as pd
-from profiling_analysis.configs.constants import END_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING, END_TIME_FOR_INFERENCE_ALL, END_TIME_FOR_INFERENCE_BEFORE_MODEL_LOADING, INFERENCE_SQLITE_PATH, INFERENCE_UNIQUE_KERNEL_NAMES, START_TIME_FOPR_INFERENCE_BEFORE_MODEL_LOADING, START_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING, START_TIME_FOR_INFERENCE_ALL
+from profiling_analysis.configs.constants import CATEGORY, CATEGORY_MAPPING, INFERENCE_TYPE, INFERENCE_SQLITE_PATH, INFERENCE_UNIQUE_KERNEL_NAMES
 from datetime import datetime
 from profiling_analysis import logger
 import sqlite3
@@ -268,19 +268,36 @@ def get_operation_mapping(operation_mapping_path):
         raise e
     
 
-def get_start_and_end_times(category):
+def get_start_and_end_times():
     try:
-        if category == "inference_after_model_loading":
-            start_time = START_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING
-            end_time = END_TIME_FOR_INFERENCE_AFTER_MODEL_LOADING
-        elif category == "inference_before_model_loading":
-            start_time = START_TIME_FOPR_INFERENCE_BEFORE_MODEL_LOADING
-            end_time = END_TIME_FOR_INFERENCE_BEFORE_MODEL_LOADING
-        else:
-            start_time = START_TIME_FOR_INFERENCE_ALL
-            end_time = END_TIME_FOR_INFERENCE_ALL
+        inference_type = INFERENCE_TYPE
+        category = CATEGORY
         
-        return start_time, end_time
+        # Read the JSON file from CATEGORY_MAPPING
+        with open(CATEGORY_MAPPING) as f:
+            data = json.load(f)
+        
+        
+        for inference in data["inference_types"]:
+            if inference["inference_type"] == inference_type:
+                if category in inference["categories"]:
+                    time_params = inference["categories"][category]["time_parameters"]
+                    
+                    # Convert seconds to nanoseconds
+                    start_time = int(time_params["start_time"] * 1e9)
+                    end_time = time_params["end_time"]
+                    
+                    if isinstance(end_time, (int, float)):
+                        end_time = int(end_time * 1e9)
+                    elif end_time == "inf":
+                        # Set end_time to infinity
+                        end_time = float("inf")
+                    
+                    logger.info(f"Start Time: {start_time} ns, End Time: {end_time} ns")
+                    return start_time, end_time
+        
+        # Raise an error if the category is not found
+        raise ValueError(f"Category {category} not found in the JSON file")
     
     except Exception as e:
         logger.error(f"Error: {e}")
