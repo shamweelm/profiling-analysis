@@ -44,13 +44,10 @@ def plot_pie_chart(df, save_path, title, threshold, percentage_col, stat_col, st
         others_items = get_others_items(df, threshold, percentage_col, operation_col)
         
         # Setup pie chart plot
-        plt.figure(figsize=figsize)  # Increase figure size for better readability
+        fig, ax = plt.subplots(figsize=figsize)  # Create a subplot for better control
 
         # Plot pie chart without showing percentages on the pie
-        # wedges, texts, autotexts = plt.pie(df_filtered[percentage_col],
-        #                                    startangle=140, colors=colors, textprops={'fontsize': 12}, autopct='%1.1f%%')
-        # wedges, texts = plt.pie(df_filtered[percentage_col], startangle=140, colors=colors, textprops={'fontsize': 12})
-        wedges, texts = plt.pie(df_filtered[percentage_col], startangle=140, colors=colors, textprops={'fontsize': 14})
+        wedges, texts = ax.pie(df_filtered[percentage_col], startangle=140, colors=colors, textprops={'fontsize': 18}, radius=0.7)
 
         # Calculate the percentages for the pie chart
         total = sum(df_filtered[percentage_col])
@@ -65,16 +62,17 @@ def plot_pie_chart(df, save_path, title, threshold, percentage_col, stat_col, st
         # Create custom labels for each slice with times included
         legend_labels = [f'{op} - {perc} ({stat})' for op, perc, stat in zip(df_filtered[operation_col], percentages, df_filtered["Stat_Col"])]
         
-        # Adding a legend to handle small slices or clarify the chart
-        plt.legend(wedges, legend_labels, title=legend_title, loc="best", fontsize='small')
-
-        # Better title display
-        # plt.title(plt_title, fontsize=14, fontweight='bold')
-        plt.title(plt_title, fontsize=16, fontweight='bold')
+        # Adding a legend below the pie chart
+        ax.legend(wedges, legend_labels, title=legend_title, loc="upper center", bbox_to_anchor=(0.5, -0.05), fontsize=14, title_fontsize=16, ncol=1)
         
-        # Show plot with adjustments
-        # plt.show()
-        plt.savefig(save_path)
+        # Better title display
+        plt.title(plt_title, fontsize=20, fontweight='bold')
+        
+        # Adjust layout to bring the legend closer to the pie chart
+        plt.subplots_adjust(top=0.50, bottom=0.1)  # Adjust the bottom as needed
+        
+        # Save plot with adjustments
+        plt.savefig(save_path, bbox_inches='tight')
         
         return others_items
     

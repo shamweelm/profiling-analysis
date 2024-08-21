@@ -36,7 +36,7 @@ def visualize_cuda_api_summaries(task, base_path, category=None):
             # colors = sns.color_palette("hsv", len(df_cupa_api_summary)),
             colors=sns.color_palette("tab20", len(df_cupa_api_summary)),
             plt_title="CUDA API Summary Based on Percentage of Time consumed by each API",
-            figsize=(10, 10),
+            figsize=(8, 8),
         )
         logger.info(f"Visualized CUDA API Summary Pie Chart and saved to: {save_path_pie_chart}")
 
@@ -128,7 +128,7 @@ def visualize_cuda_memtime_summary(task, base_path, category=None):
             # Color with brown color palette other than tab20
             colors=sns.color_palette("Dark2", len(df_cuda_memtime_summary)),
             plt_title="CUDA Memory Time Summary",
-            figsize=(10, 10),
+            figsize=(8, 8),
         )
         logger.info(f"Visualized CUDA Memory Time Summary Pie Chart and saved to: {save_path_pie_chart}")
 
@@ -169,7 +169,7 @@ def visualize_cuda_memsize_summary(task, base_path, category=None):
             # Color with brown color palette other than tab20
             colors=sns.color_palette("Dark2", len(df_cuda_memsize_summary)),
             plt_title="CUDA Memory Size Summary",
-            figsize=(10, 10),
+            figsize=(8, 8),
         )
         logger.info(f"Visualized CUDA Memory Size Summary Pie Chart and saved to: {save_path_pie_chart}")
 
@@ -261,7 +261,7 @@ def visualize_kernel_summaries(task, base_path, category=None):
                 "tab20", len(df_top_10_cuda_kernel_launch_exec_short_summary)
             ),
             plt_title="CUDA Kernel Launch and Execution Time Summary",
-            figsize=(10, 10),
+            figsize=(8, 8),
         )
         logger.info(f"Visualized Top 10 CUDA Kernel Launch and Execution Short Summary Pie Chart and saved to: {save_path_pie_chart}")
 

@@ -380,6 +380,17 @@ def plot_and_save_by_level(task, base_path, category, name, df, level, level_nam
     try:
         df_level = df[df[level_name] == level]
         
+        # If "Lvl" = 4 and "Name" = "0: TransformerBlock"
+        # Keep only the following operations:
+        # attention: Attention
+        # attention_norm: RMSNorm
+        # feed forward: FeedForward
+        # ffn_norm: RMSNorm
+        
+        # Filter where Name does not contain "aten"
+        if level == 4 and name == "0: TransformerBlock":
+            df_level = df_level[~df_level['Name'].str.contains("aten")]
+        
         if not df_level.empty:
             # Remove Time (%) column if it exists
             if 'Time (%)' in df_level.columns:
